@@ -42,7 +42,7 @@ def stream_watcher(identifier, stream):
         stream.close()
 
 
-def printer():
+def printer(proc):
     while True:
         try:
             # Block for 1 second.

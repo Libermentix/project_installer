@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO,
 
 class DatabaseInstaller(Installer):
     #postgres implementation
-    sql = "CREATE USER %(db_user)s with encrypyed password '%(db_pw)s'; " \
+    sql = "CREATE USER %(db_user)s with encrypted password '%(db_pw)s'; " \
           "CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;"
 
     sudo = False
@@ -110,7 +110,7 @@ class DatabaseInstaller(Installer):
         proc = Popen(''.join(commands), shell=True, stdout=PIPE, stderr=PIPE)
 
         Thread(target=stream_watcher, name='stdout-watcher',
-                args=('STDOUT', proc.stdout)).start()
+                args=('stdout', proc.stdout)).start()
         Thread(target=stream_watcher, name='stderr-watcher',
-                args=('STDERR', proc.stderr)).start()
-        Thread(target=printer, name='printer').start()
+                args=('strerr', proc.stderr)).start()
+        Thread(target=printer, args=(proc,), name='printer').start()

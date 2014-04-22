@@ -122,7 +122,7 @@ class ProjectInstaller(Installer):
                 args=('STDOUT', proc.stdout)).start()
         Thread(target=stream_watcher, name='stderr-watcher',
                 args=('STDERR', proc.stderr)).start()
-        Thread(target=printer, name='printer').start()
+        Thread(target=printer, args=(proc,), name='printer').start()
 
 
     def install_requirements(self):
@@ -139,7 +139,7 @@ class ProjectInstaller(Installer):
                     args=('STDOUT', proc.stdout)).start()
             Thread(target=stream_watcher, name='stderr-watcher',
                     args=('STDERR', proc.stderr)).start()
-            Thread(target=printer, name='printer').start()
+            Thread(target=printer, args=(proc,),name='printer').start()
 
             #process = subprocess.Popen(
             #    command, shell=True,
