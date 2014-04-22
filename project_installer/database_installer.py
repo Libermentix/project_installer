@@ -1,23 +1,24 @@
 __author__ = 'Felix'
 import logging
-from subprocess import Popen, PIPE
-from threading import Thread
 
 from .installer import Installer
-from .utils import generate_unique_id, stream_watcher, printer
+from .utils import generate_unique_id, run_command
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
 
+
 class DatabaseInstaller(Installer):
     #postgres implementation
-    sql = "CREATE USER %(db_user)s with encrypted password '%(db_pw)s'; " \
-          "CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;"
+    sql = [
+        "CREATE USER %(db_user)s with encrypted password `%(db_pw)s`; ",
+        "CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;"
+    ]
 
     sudo = False
     sudo_user = 'postgres'
 
-    postactivate = "# Database settings \n"\
+    postactivate = "# Database settings \n" \
                    "export DB_ENGINE='django.db.backends.postgresql_psycopg2'\n" \
                    "export DB_NAME='%(db_name)s' \n" \
                    "export DB_PW='%(db_pw)s' \n" \
@@ -67,7 +68,7 @@ class DatabaseInstaller(Installer):
         """
         returns a db_pw that is generated once and then cached.
         """
-        if not getattr(self,'_db_pw_cache', False):
+        if not getattr(self, '_db_pw_cache', False):
             self._db_pw_cache = self._generate_db_pw()
         return self._db_pw_cache
 
@@ -89,28 +90,19 @@ class DatabaseInstaller(Installer):
             self._db_name_cache = self._generate_db_name()
         return self._db_name_cache
 
-
-
     def create_sql(self):
         logging.info('creating sql with variables...')
-        self.sql = self.sql % self.var_dict
+        self.sql = [sql % self.var_dict for sql in self.sql]
 
     def run_commands(self):
         self.create_sql()
 
         logging.info('Running SQL...')
 
-        commands = []
-        if self.sudo:
-            commands.append('sudo su %s -c ' % self.sudo_user)
+        command_prefix = 'sudo su %s -c ' % self.sudo_user if self.sudo else ''
 
-        commands.append('psql -d postgres -c "%s"' % self.sql)
+        for sql in self.sql :
+            command = '%s psql -d postgres -c %s' % (command_prefix, sql)
+            logging.info('running %s ' % command)
+            run_command(command)
 
-        logging.info('running %s ' % ''.join(commands))
-        proc = Popen(''.join(commands), shell=True, stdout=PIPE, stderr=PIPE)
-
-        Thread(target=stream_watcher, name='stdout-watcher',
-                args=('stdout', proc.stdout)).start()
-        Thread(target=stream_watcher, name='stderr-watcher',
-                args=('strerr', proc.stderr)).start()
-        Thread(target=printer, args=(proc,), name='printer').start()

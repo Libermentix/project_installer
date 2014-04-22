@@ -5,6 +5,8 @@ import os
 import string
 import random
 from Queue import Queue, Empty
+from threading import Thread
+from subprocess import Popen, PIPE
 
 class ImproperlyConfigured(ValueError):
     pass
@@ -30,9 +32,7 @@ def get_env_variable(var_name):
 
 
 #threading and Popen: http://sharats.me/the-ever-useful-and-neat-subprocess-module.html
-
 io_q = Queue()
-
 def stream_watcher(identifier, stream):
 
     for line in stream:
@@ -54,3 +54,13 @@ def printer(proc):
         else:
             identifier, line = item
             print identifier + ':', line
+
+
+def run_command(command):
+    proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+    Thread(target=stream_watcher, name='stdout-watcher',
+            args=('STDOUT', proc.stdout)).start()
+    Thread(target=stream_watcher, name='stderr-watcher',
+            args=('STDERR', proc.stderr)).start()
+    Thread(target=printer, args=(proc,),name='printer').start()

@@ -1,16 +1,13 @@
 __author__ = 'Felix'
 import logging
 
-from subprocess import Popen, PIPE
-from threading import Thread
-
 from unipath import Path
 import git
 
 from .installer import Installer
 from .database_installer import DatabaseInstaller
 from .django_installer import DjangoInstaller
-from .utils import printer, stream_watcher
+from .utils import run_command
 
 
 logging.basicConfig(level=logging.INFO,
@@ -116,14 +113,7 @@ class ProjectInstaller(Installer):
                                    self.requirements_file)
 
         logging.info('Installing virtualenv... (calling %s)' % command)
-        proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-
-        Thread(target=stream_watcher, name='stdout-watcher',
-                args=('STDOUT', proc.stdout)).start()
-        Thread(target=stream_watcher, name='stderr-watcher',
-                args=('STDERR', proc.stderr)).start()
-        Thread(target=printer, args=(proc,), name='printer').start()
-
+        run_command(command)
 
     def install_requirements(self):
         if not self.is_envwrapper:
@@ -132,14 +122,8 @@ class ProjectInstaller(Installer):
             # we can assume that we are in the virtualenv now, and mkproject
             # was called
             command = 'pip install -r %s' % self.requirements_file
+            run_command(command)
 
-            proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-
-            Thread(target=stream_watcher, name='stdout-watcher',
-                    args=('STDOUT', proc.stdout)).start()
-            Thread(target=stream_watcher, name='stderr-watcher',
-                    args=('STDERR', proc.stderr)).start()
-            Thread(target=printer, args=(proc,),name='printer').start()
 
             #process = subprocess.Popen(
             #    command, shell=True,
@@ -156,6 +140,7 @@ class ProjectInstaller(Installer):
         """
         target = Path(self.venv_folder, 'bin')
         move_orig = Path(self.install_path, which_one)
+        logging.info('target: %s, move_orig: %s' % (target, move_orig))
 
         if move_orig.exists():
             logging.info('Moving %s into place ...' % which_one)
@@ -167,9 +152,11 @@ class ProjectInstaller(Installer):
         self.install_requirements()
         self.db_installer()
         self.django_installer()
+
+    def run(self):
+        super(ProjectInstaller, self).run()
         self.move_to_venv(which_one='postactivate')
         self.move_to_venv(which_one='postdeactivate')
-
 
 # run as a command line programm
 # TODO: make it run as a command line program.
