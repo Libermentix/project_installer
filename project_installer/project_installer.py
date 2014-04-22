@@ -102,11 +102,11 @@ class ProjectInstaller(Installer):
         Calls a script that creates the virtual environment and installs
         its dependencies, currently only sports python2.7 support.
         """
-        exec_path = Path(__file__, 'bash', 'install_venv.sh')
+        exec_path = Path(Path(__file__).parent, 'bash', 'install_venv.sh')
 
         command = [
             '%s %s %s %s ' %
-            (exec_path, self.project_dir,
+            (exec_path, self.install_path,
              self.project_name, self.requirements_file)
         ]
 
