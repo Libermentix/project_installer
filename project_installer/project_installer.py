@@ -1,7 +1,6 @@
 __author__ = 'Felix'
 import logging
 import subprocess
-import sys
 
 from unipath import Path
 import git
@@ -10,11 +9,12 @@ from .installer import Installer
 from .database_installer import DatabaseInstaller
 from .django_installer import DjangoInstaller
 
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
 
-class ProjectInstaller(Installer):
 
+class ProjectInstaller(Installer):
     postactivate = '#!/bin/bash' \
                    '#setting project related variables' \
                    'export PROJECT_NAME="%(project_name)s"\n' \
@@ -102,14 +102,15 @@ class ProjectInstaller(Installer):
         Calls a script that creates the virtual environment and installs
         its dependencies, currently only sports python2.7 support.
         """
-        exec_path = Path(__file__,'bash','install_venv.sh')
+        exec_path = Path(__file__, 'bash', 'install_venv.sh')
 
-        command = [exec_path,
-                   self.project_dir,
-                   self.project_name,
-                   self.requirements_file]
+        command = [
+            '%s %s %s %s ' %
+            (exec_path, self.project_dir,
+             self.project_name, self.requirements_file)
+        ]
 
-        logging.info('Installing virtualenv...')
+        logging.info('Installing virtualenv... (calling %s)' % command)
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
@@ -133,7 +134,7 @@ class ProjectInstaller(Installer):
         """
         Moves the created config_files into the bin folder to be executed.
         """
-        target = Path(self.venv_folder,'bin')
+        target = Path(self.venv_folder, 'bin')
         move_orig = Path(self.install_path, which_one)
 
         if move_orig.exists():
