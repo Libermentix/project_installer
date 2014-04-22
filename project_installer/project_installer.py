@@ -124,16 +124,6 @@ class ProjectInstaller(Installer):
             command = 'pip install -r %s' % self.requirements_file
             run_command(command)
 
-
-            #process = subprocess.Popen(
-            #    command, shell=True,
-            #    stdout=subprocess.PIPE,
-            #    stderr=subprocess.STDOUT
-            #)
-            #process.communicate()
-            #for line in process.stdout:
-            #    logging.info(line)
-
     def move_to_venv(self, which_one):
         """
         Moves the created config_files into the bin folder to be executed.
@@ -163,3 +153,6 @@ class ProjectInstaller(Installer):
 #if __name__ == '__main__':
 #    if len(sys.argv) < 3:
 #        logging.error('Insufficiant parameters')
+
+#TODO:
+# create security net for all the exceptions that could be raised ;-)

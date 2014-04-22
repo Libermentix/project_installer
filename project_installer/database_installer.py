@@ -10,9 +10,8 @@ logging.basicConfig(level=logging.INFO,
 
 class DatabaseInstaller(Installer):
     #postgres implementation
-    sql = [
-        "CREATE USER %(db_user)s with encrypted password `%(db_pw)s`; ",
-        "CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;"
+    sql = ["CREATE USER '%(db_user)s' WITH PASSWORD '%(db_pw)s';",
+           "CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;"
     ]
 
     sudo = False
@@ -101,7 +100,7 @@ class DatabaseInstaller(Installer):
 
         command_prefix = 'sudo su %s -c ' % self.sudo_user if self.sudo else ''
 
-        for sql in self.sql :
+        for sql in self.sql:
             command = '%s psql -d postgres -c %s' % (command_prefix, sql)
             logging.info('running %s ' % command)
             run_command(command)

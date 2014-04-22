@@ -9,12 +9,12 @@ logging.basicConfig(level=logging.INFO,
 
 class DjangoInstaller(Installer):
     postactivate = '#django \n' \
-                   'export DJANGO_SETTINGS_MODULE="%(settings_module)s" \n' \
-                   'export DJANGO_SECRET_KEY="%(django_secret_key)s" \n ' \
-                   'export DJANGO_DEBUG="%(django_debug)s" \n' \
-                   'export DJANGO_MEDIA_URL="http://%(django_media_url)s/" \n' \
-                   'export DJANGO_STATIC_URL="http://%(django_static_url)s/" \n' \
-                   'export DJANGO_WEBSITE_URL="http://%(django_website_url)s" \n'
+                   'export DJANGO_SETTINGS_MODULE="%(settings_module)s"\n' \
+                   'export DJANGO_SECRET_KEY="%(django_secret_key)s"\n' \
+                   'export DJANGO_DEBUG="%(django_debug)s"\n' \
+                   'export DJANGO_MEDIA_URL="http://%(django_media_url)s/"\n' \
+                   'export DJANGO_STATIC_URL="http://%(django_static_url)s/"\n'\
+                   'export DJANGO_WEBSITE_URL="http://%(django_website_url)s"\n'
 
     postdeactivate = '#django \n' \
                      'unset DJANGO_SETTINGS_MODULE \n' \
@@ -26,7 +26,7 @@ class DjangoInstaller(Installer):
 
     settings_module = 'settings.base'
     is_production = False
-    domain_prefix = 'www'
+    domain_prefix = 'www.'
     media_prefix = 'upload.cdn.'
     static_prefix = 'static.cdn.'
     domain = '.com'
