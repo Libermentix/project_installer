@@ -25,8 +25,9 @@ class Installer(object):
         # make all attributes overridable so that external applications
         # can make use of the pattern and reset the variable names
         for k, v in six.iteritems(kwargs):
-            setattr(self, key=k, value=v)
+            setattr(self, k, v)
 
+        self.install_path.mkdir()
 
     @property
     def venv_folder(self):
