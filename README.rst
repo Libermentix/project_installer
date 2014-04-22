@@ -7,11 +7,11 @@ based on `virtualenvwrapper.django`_.
 It can be used in two ways:
 
 - a readymade installer that can be customized and implemented in a standalone-python script, 
- which will install a virtualenvironment, a database and a django-installation, plus accordingrequirements 
- set in the skeletton's requirements.
+  which will install a virtualenvironment, a database and a django-installation, plus accordingrequirements 
+  set in the skeletton's requirements.
 
 - a plugin template plugin for `virtualenvwrapper`_ to create new projects, which can be used with mkproject. 
- This will install the same except the virtualenvironmentsince it has been setup by the virtualenvwrapper already.
+  This will install the same except the virtualenvironmentsince it has been setup by the virtualenvwrapper already.
 
 Currently the git repository points to `Virtualenv Skeletton Directory`_, this can
 be adjusted when using the first approach
