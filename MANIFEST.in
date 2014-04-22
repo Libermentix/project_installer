@@ -2,6 +2,6 @@ include setup.py
 include distribute_setup.py
 include tests/*
 include tox.ini
-recursive-include project_installer/ *.py *.sh
+include project_installer/bash/*
 
 recursive-include docs *.rst *.py *.html *.css *.js *.png *.txt
