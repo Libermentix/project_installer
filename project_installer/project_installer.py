@@ -104,14 +104,13 @@ class ProjectInstaller(Installer):
         """
         exec_path = Path(Path(__file__).parent, 'bash', 'installer.sh')
 
-        command = [
-            '%s %s %s %s ' %
-            (exec_path, self.install_path,
-             self.project_name, self.requirements_file)
+        command = [exec_path, self.install_path,
+                   self.project_name, self.requirements_file
         ]
 
         logging.info('Installing virtualenv... (calling %s)' % command)
-        subprocess.Popen(command)
+        output = subprocess.check_output(command)
+        logging.info(output)
         logging.info('...done')
 
 
