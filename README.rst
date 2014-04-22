@@ -46,6 +46,7 @@ Custom Installscript
 
 
 2) You can adjust the following variables:
+
    - flavor = 'django_custom' #current default, needs to be a subdirectory git repo
    - git_repo = 'https://github.com/Libermentix/venv_skeletton_directory.git'
    - postactivate='<ENVIRONMENT VARIABLES TO BE SET> \n'
