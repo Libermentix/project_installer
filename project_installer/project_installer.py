@@ -1,6 +1,8 @@
 __author__ = 'Felix'
 import logging
-import subprocess
+
+from subprocess import Popen, PIPE
+from threading import Thread
 
 from unipath import Path
 import git
@@ -8,6 +10,7 @@ import git
 from .installer import Installer
 from .database_installer import DatabaseInstaller
 from .django_installer import DjangoInstaller
+from .utils import printer, stream_watcher
 
 
 logging.basicConfig(level=logging.INFO,
@@ -113,12 +116,14 @@ class ProjectInstaller(Installer):
                                    self.requirements_file)
 
         logging.info('Installing virtualenv... (calling %s)' % command)
-        proc = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
-                                stdout=subprocess.PIPE
-        )
-        proc.communicate()
-        for line in proc.stdout:
-            logging.info(line)
+        proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+        Thread(target=stream_watcher, name='stdout-watcher',
+                args=('STDOUT', proc.stdout)).start()
+        Thread(target=stream_watcher, name='stderr-watcher',
+                args=('STDERR', proc.stderr)).start()
+        Thread(target=printer, name='printer').start()
+
 
     def install_requirements(self):
         if not self.is_envwrapper:
@@ -128,14 +133,22 @@ class ProjectInstaller(Installer):
             # was called
             command = 'pip install -r %s' % self.requirements_file
 
-            process = subprocess.Popen(
-                command, shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT
-            )
-            process.communicate()
-            for line in process.stdout:
-                logging.info(line)
+            proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            Thread(target=stream_watcher, name='stdout-watcher',
+                    args=('STDOUT', proc.stdout)).start()
+            Thread(target=stream_watcher, name='stderr-watcher',
+                    args=('STDERR', proc.stderr)).start()
+            Thread(target=printer, name='printer').start()
+
+            #process = subprocess.Popen(
+            #    command, shell=True,
+            #    stdout=subprocess.PIPE,
+            #    stderr=subprocess.STDOUT
+            #)
+            #process.communicate()
+            #for line in process.stdout:
+            #    logging.info(line)
 
     def move_to_venv(self, which_one):
         """

@@ -1,9 +1,10 @@
 __author__ = 'Felix'
 import logging
-import subprocess
+from subprocess import Popen, PIPE
+from threading import Thread
 
 from .installer import Installer
-from .utils import generate_unique_id
+from .utils import generate_unique_id, stream_watcher, printer
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
@@ -106,13 +107,10 @@ class DatabaseInstaller(Installer):
         commands.append('psql -d postgres -c "%s"' % self.sql)
 
         logging.info('running %s ' % ''.join(commands))
+        proc = Popen(''.join(commands), shell=True, stdout=PIPE, stderr=PIPE)
 
-        proc = subprocess.Popen(
-            commands, shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
-        )
-        proc.communicate()
-
-        for line in proc.stdout:
-            logging.info(line)
+        Thread(target=stream_watcher, name='stdout-watcher',
+                args=('STDOUT', proc.stdout)).start()
+        Thread(target=stream_watcher, name='stderr-watcher',
+                args=('STDERR', proc.stderr)).start()
+        Thread(target=printer, name='printer').start()
