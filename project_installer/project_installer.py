@@ -111,11 +111,9 @@ class ProjectInstaller(Installer):
         ]
 
         logging.info('Installing virtualenv... (calling %s)' % command)
-        process = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        )
-        out, err = process.communicate()
-        logging.info(out)
+        subprocess.Popen(command)
+        logging.info('...done')
+
 
     def install_requirements(self):
         if not self.is_envwrapper:
