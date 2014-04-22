@@ -65,6 +65,9 @@ class ProjectInstaller(Installer):
         ).absolute()
 
     def create_tmp_dir(self):
+        # TODO:
+        # Account for existing project paths, here it should ask to remove
+        # or abort.
         self._tmp_dir = Path(self.install_path, 'tmp')
         self._tmp_dir.mkdir()
         self._tmp_dir.chdir()
@@ -104,15 +107,18 @@ class ProjectInstaller(Installer):
         """
         exec_path = Path(Path(__file__).parent, 'bash', 'installer.sh')
 
-        command = [exec_path, self.install_path,
-                   self.project_name, self.requirements_file
-        ]
+        command = '%s %s %s %s' % (exec_path,
+                                   self.install_path,
+                                   self.project_name,
+                                   self.requirements_file)
 
         logging.info('Installing virtualenv... (calling %s)' % command)
-        output = subprocess.check_output(command)
-        logging.info(output)
-        logging.info('...done')
-
+        proc = subprocess.Popen(command, shell=True, stderr=subprocess.STDOUT,
+                                stdout=subprocess.PIPE
+        )
+        proc.communicate()
+        for line in proc.stdout:
+            logging.info(line)
 
     def install_requirements(self):
         if not self.is_envwrapper:
@@ -120,12 +126,16 @@ class ProjectInstaller(Installer):
         else:
             # we can assume that we are in the virtualenv now, and mkproject
             # was called
-            command = ['pip install -r %s' % self.requirements_file]
+            command = 'pip install -r %s' % self.requirements_file
+
             process = subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+                command, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT
             )
-            out, err = process.communicate()
-            logging.info(out)
+            process.communicate()
+            for line in process.stdout:
+                logging.info(line)
 
     def move_to_venv(self, which_one):
         """

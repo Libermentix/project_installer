@@ -106,6 +106,13 @@ class DatabaseInstaller(Installer):
         commands.append('psql -d postgres -c "%s"' % self.sql)
 
         logging.info('running %s ' % ''.join(commands))
-        out, err = subprocess.Popen(commands).communicate()
 
-        logging.info('out: %s, err: %s' % (out, err))
+        proc = subprocess.Popen(
+            commands, shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+        proc.communicate()
+
+        for line in proc.stdout:
+            logging.info(line)
