@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
 
 class Installer(object):
-    install_path = Path().absolute()
+    install_path = None
     postactivate = None
     postdeactivate = None
 
@@ -27,7 +27,9 @@ class Installer(object):
         for k, v in six.iteritems(kwargs):
             setattr(self, k, v)
 
+        self.install_path = Path(self.project_dir, project_name)
         self.install_path.mkdir()
+        self.install_path.chdir()
 
     @property
     def venv_folder(self):
