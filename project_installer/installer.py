@@ -18,7 +18,7 @@ class Installer(object):
 
     def __init__(self, project_dir, project_name, envwrapper=False,
                  *args, **kwargs):
-        self.project_dir = project_dir
+        self.project_dir = Path(project_dir).absolute()
         self.project_name = project_name
         self.is_envwrapper = envwrapper
 
