@@ -63,7 +63,7 @@ class DjangoInstaller(Installer):
 
     @property
     def django_static_url(self):
-        return '%s%s' % (self.static_prefix, self.project_name, self.domain)
+        return '%s%s%s' % (self.static_prefix, self.project_name, self.domain)
 
     @property
     def django_website_url(self):
