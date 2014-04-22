@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.INFO,
 
 class DatabaseInstaller(Installer):
     #postgres implementation
-    sql = ["CREATE USER '%(db_user)s' WITH PASSWORD '%(db_pw)s';",
-           "CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;"
+    sql = ["\"CREATE USER '%(db_user)s' WITH PASSWORD '%(db_pw)s';\"",
+           "\"CREATE DATABASE %(db_name)s with OWNER=%(db_user)s;\""
     ]
 
     sudo = False
