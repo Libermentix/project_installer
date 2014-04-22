@@ -1,7 +1,17 @@
 #!/usr/bin/env python
+from project_installer import (__author__,
+                               __copyright__,
+                               __credits__,
+                               __license__,
+                               __version__,
+                               __maintainer__,
+                               __email__,
+                               __status__)
 
-PROJECT = 'virtualenvwrapper.project'
-VERSION = '0.1'
+
+
+PROJECT = 'project_installer'
+VERSION = __version__
 
 # Bootstrap installation of Distribute
 import distribute_setup
@@ -116,13 +126,12 @@ description = ('virtualenvwrapper plugin to '
 
 setup(
     name=PROJECT,
-    version=VERSION,
-
+    version=__version__,
     description=description,
     long_description=long_description,
 
-    author='Felix Plitzko',
-    author_email='felix.plitzko@libermentix.com',
+    author=__maintainer__,
+    author_email=__email__,
 
     url='https://github.com/Libermentix/venv_project',
 
@@ -132,12 +141,12 @@ setup(
         'Intended Audience :: Developers',
         'Environment :: Console',
         'Framework :: Django',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
+        #'Programming Language :: Python :: 2',
+        #'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
+        #'Programming Language :: Python :: 3',
+        #'Programming Language :: Python :: 3.2',
+        #'Programming Language :: Python :: 3.3',
     ],
 
     platforms=['Any'],
