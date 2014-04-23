@@ -1,6 +1,6 @@
 __author__ = 'Felix'
 import logging
-
+import string
 from .installer import Installer
 from .utils import generate_unique_id, run_command
 
@@ -53,13 +53,16 @@ class DatabaseInstaller(Installer):
         return u'%s' % generate_unique_id(length=20)
 
     def _generate_db_user(self):
-        return u'%s_%s' % (self.project_name, generate_unique_id(length=10))
+        return u'%s_%s' % (self.project_name, generate_unique_id(
+            length=10, chars=string.ascii_lowercase)
+        )
 
     def _generate_db_name(self):
         return u'%s_%s_%s' % (
             self.project_name,
-            generate_unique_id(length=3),
-            generate_unique_id(length=3)
+            generate_unique_id(length=3, chars=string.ascii_lowercase),
+            generate_unique_id(
+                length=3, chars=string.digits+string.ascii_lowercase)
         )
 
     @property

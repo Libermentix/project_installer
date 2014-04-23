@@ -11,7 +11,9 @@ from subprocess import Popen, PIPE
 class ImproperlyConfigured(ValueError):
     pass
 
-def generate_unique_id(length=6, chars=string.ascii_uppercase+string.digits):
+characterset = string.ascii_letters+string.digits+'_)(*&^%$#@!,.<>/?;:'
+
+def generate_unique_id(length=6, chars=characterset):
     '''
     generates an id of length picked out of chosen characters
     see: http://stackoverflow.com/questions/2257441/
