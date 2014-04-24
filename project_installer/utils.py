@@ -8,10 +8,12 @@ from Queue import Queue, Empty
 from threading import Thread
 from subprocess import Popen, PIPE
 
-logger = logging.getLogger('project_installer.logger')
-logger.basicConfig(
+logging.basicConfig(
     level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s'
 )
+logger = logging.getLogger('project_installer.logger')
+
+
 
 
 class ImproperlyConfigured(ValueError):
