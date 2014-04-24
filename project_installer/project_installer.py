@@ -135,7 +135,8 @@ class ProjectInstaller(Installer):
 
         if source.exists():
             logger.info('Moving %s into place ...' % which_one)
-            target.write_file(source.read_file(), 'w')
+            content = source.read_file()
+            target.write_file(content, 'w+')
             source.remove()
 
     def run_prepare_configuration(self):
