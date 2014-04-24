@@ -22,7 +22,7 @@ Installation
 
 ::
 
-  $ pip install git+https://github.com/Libermentix/venv_project.git@master
+  $ pip install git+https://github.com/Libermentix/project_installer.git@master
 
 
 Usage

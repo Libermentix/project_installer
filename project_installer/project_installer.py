@@ -132,14 +132,17 @@ class ProjectInstaller(Installer):
     def move_to_venv(self, which_one):
         """
         Moves the created config_files into the bin folder to be executed.
+        Does this by first pasting all the contents of the temporary file
+        into the new or existing target file and then deleting the temp file.
         """
-        target = Path(self.venv_folder, self.project_name, 'bin')
-        move_orig = Path(self.install_path, which_one)
-        logging.info('target: %s, move_orig: %s' % (target, move_orig))
+        target = Path(self.venv_folder, self.project_name, 'bin', which_one)
+        source = Path(self.install_path, which_one)
+        logging.info('target: %s, move_orig: %s' % (target, source))
 
-        if move_orig.exists():
+        if source.exists():
             logging.info('Moving %s into place ...' % which_one)
-            move_orig.move(target)
+            target.write_file(source.read_file(), 'w')
+            source.remove()
 
     def run_prepare_configuration(self):
         self.get_git_repo()
@@ -161,10 +164,12 @@ class ProjectInstaller(Installer):
         """
 
         for item in self.db_installer.post_run_command_stack:
-            item()
+            # should be a callable or None
+            if item: item()
 
         for item in self.django_installer.post_run_command_stack:
-            item()
+            # should be a callable or None
+            if item: item()
 
         self.move_to_venv(which_one='postactivate')
         self.move_to_venv(which_one='postdeactivate')

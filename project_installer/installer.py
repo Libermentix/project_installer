@@ -50,22 +50,6 @@ class Installer(object):
     def run_prepare_configuration(self):
         raise NotImplementedError('Must be implemented in subclass')
 
-    #def create_postactivate(self):
-    #    logging.info('Creating postactivate script')
-    #
-    #    if not self.postactivate:
-    #        raise NotImplementedError('Postactivate needs to be set')
-
-    #    self.postactivate = self.postactivate % self.var_dict
-
-    #def create_postdeactivate(self):
-    #    logging.info('Creating postdeactivate script')#
-    #
-    #    if not self.postdeactivate:
-    #        raise NotImplementedError('Postdeactivate needs to be set')
-    #
-    #    self.postdeactivate = self.postdeactivate % self.var_dict
-
     def prepare_config_for_file_creation(self, which_one):
         logging.info('preparing config variables ...')
         if not getattr(self, which_one):
@@ -73,7 +57,7 @@ class Installer(object):
 
         setattr(self, which_one, which_one % self.var_dict)
 
-        logging.info(getattr(which_one))
+        logging.info(getattr(self, which_one))
 
     def create_file(self, which_one):
         self.prepare_config_for_file_creation(which_one=which_one)
