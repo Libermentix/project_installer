@@ -1,7 +1,7 @@
 ==================
  project_installer
 ==================
-project_installer is a project skeletton installer for python. This is a fork and
+project_installer is a project skeletton installer for python. The virtualenvwrapper plugin is a fork and
 based on `virtualenvwrapper.django`_.
 
 It can be used in two ways:
