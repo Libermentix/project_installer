@@ -9,30 +9,30 @@ from .utils import run_command, logger
 
 
 class ProjectInstaller(Installer):
-    postactivate = '''#!/bin/bash
-                   #setting project related variables
-                   export PROJECT_NAME="%(project_name)s
-                   export PROJECT_PATH="%(project_dir)s"
-                   echo "virtual environment for application in project path: $PROJECT_PATH"
-                   #extend python path
-                   EXTENSION=""
-                   if [ -n "$PYTHONPATH" ] ; then
-                        OLD_PYTHON_PATH="$PYTHONPATH"
-                        export OLD_PYTHON_PATH
-                        EXTENSION=":${OLD_PYTHON_PATH}"
-                   fi
-                   export PYTHONPATH=${PROJECT_PATH}${EXTENSION}
+    postactivate = '#!/bin/bash\n'
+    postactivate += '''
+    #setting project related variables
+    export PROJECT_NAME="%(project_name)s
+    export PROJECT_PATH="%(project_dir)s"
+    echo "virtual environment for application in project path: $PROJECT_PATH"
+    #extend python path
+    EXTENSION=""
+    if [ -n "$PYTHONPATH" ] ; then
+        OLD_PYTHON_PATH="$PYTHONPATH"
+        export OLD_PYTHON_PATH
+        EXTENSION=":${OLD_PYTHON_PATH}"
+    fi
+    export PYTHONPATH=${PROJECT_PATH}${EXTENSION}
 
-                   '''
+               '''
 
     postdeactivate = '''
-                     #unsetting project related variables
-                     unset PROJECT_BASE_PATH
-                     unset PROJECT_NAME
-                     unset PROJECT_PATH
-                     export PYTHONPATH=${OLD_PYTHON_PATH}
-
-                     '''
+    #unsetting project related variables
+    unset PROJECT_BASE_PATH
+    unset PROJECT_NAME
+    unset PROJECT_PATH
+    export PYTHONPATH=${OLD_PYTHON_PATH}
+    '''
 
     flavor = 'django_custom'
     git_repo = 'https://github.com/Libermentix/venv_skeletton_directory.git'
@@ -136,17 +136,18 @@ class ProjectInstaller(Installer):
         if source.exists():
             logger.info('Moving %s into place ...' % which_one)
             content = source.read_file()
+
+            #make sure the directory exists
+            if not target.parent.exists():
+                target.parent.mkdir(parents=True)
             target.write_file(content, 'w+')
+
             source.remove()
 
     def run_prepare_configuration(self):
         self.get_git_repo()
         self.install_skeletton()
         self.install_requirements()
-        logger.info('Now installing Database ...')
-        self.db_installer()
-        logger.info('Now installing django...')
-        self.django_installer()
 
     def run(self):
         self.run_prepare_configuration()
@@ -155,9 +156,12 @@ class ProjectInstaller(Installer):
 
     def run_post_create_configuration(self):
         """
-        run the the post_run_command_stack of all children.
+        run the the post_run_command_stack
         """
+        self.db_installer()
+        self.django_installer()
 
+        #run the post create configuration command for the children
         for item in self.db_installer.post_run_command_stack:
             # should be a callable or None
             if item: item()

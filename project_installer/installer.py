@@ -54,9 +54,11 @@ class Installer(object):
         if not getattr(self, which_one):
             raise NotImplementedError('Postactivate needs to be set.')
 
-        setattr(self, which_one, which_one % self.var_dict)
+        contents = getattr(self, '%s' % which_one) % self.var_dict
 
-        logger.info(getattr(self, which_one))
+        setattr(self, '%s' % which_one, contents)
+
+        logger.info(contents)
 
     def create_file(self, which_one):
         self.prepare_config_for_file_creation(which_one=which_one)

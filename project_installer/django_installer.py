@@ -8,22 +8,25 @@ from .utils import generate_unique_id, run_command, logger
 
 
 class DjangoInstaller(Installer):
-    postactivate = '#django \n' \
-                   'export DJANGO_SETTINGS_MODULE="%(settings_module)s"\n' \
-                   'export DJANGO_SECRET_KEY="%(django_secret_key)s"\n' \
-                   'export DJANGO_DEBUG="%(django_debug)s"\n' \
-                   'export DJANGO_MEDIA_URL="http://%(django_media_url)s/"\n' \
-                   'export DJANGO_STATIC_URL="http://%(django_static_url)s/"\n' \
-                   'export DJANGO_WEBSITE_URL="http://%(django_website_url)s"\n'
+    postactivate = '''
+    #django
+    export DJANGO_SETTINGS_MODULE="%(settings_module)s
+    export DJANGO_SECRET_KEY="%(django_secret_key)s"
+    export DJANGO_DEBUG="%(django_debug)s"
+    export DJANGO_MEDIA_URL="http://%(django_media_url)s/"
+    export DJANGO_STATIC_URL="http://%(django_static_url)s/"
+    export DJANGO_WEBSITE_URL="http://%(django_website_url)s"
+    '''
 
-    postdeactivate = '#django \n' \
-                     'unset DJANGO_SETTINGS_MODULE \n' \
-                     'unset DJANGO_SECRET_KEY \n' \
-                     'unset DJANGO_DEBUG \n' \
-                     'unset DJANGO_MEDIA_URL \n' \
-                     'unset DJANGO_STATIC_URL \n' \
-                     'unset DJANGO_WEBSITE_URL \n'
-
+    postdeactivate = '''
+    #django
+    unset DJANGO_SETTINGS_MODULE
+    unset DJANGO_SECRET_KEY
+    unset DJANGO_DEBUG
+    unset DJANGO_MEDIA_URL
+    unset DJANGO_STATIC_URL
+    unset DJANGO_WEBSITE_URL
+    '''
     settings_module = 'settings.base'
     is_production = False
     domain_prefix = 'www.'
@@ -79,15 +82,3 @@ class DjangoInstaller(Installer):
         # nothing to be run in django installer,
         # we just need to run the log files.
         logger.info('Doing nothing...')
-
-    def run_post_create_configuration(self):
-        self.post_run_command_stack.append(
-            self._run_django_post_install_script()
-        )
-
-    def _run_django_post_install_script(self):
-        exec_path = Path(Path(__file__).parent, 'bash',
-                         'django_post_install.sh')
-        command = '%s %s' % (exec_path, self.project_name)
-
-        run_command(command)

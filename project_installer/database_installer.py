@@ -14,22 +14,25 @@ class DatabaseInstaller(Installer):
     sudo = False
     sudo_user = 'postgres'
 
-    postactivate = "# Database settings \n" \
-                   "export DB_ENGINE='django.db.backends.postgresql_psycopg2'\n" \
-                   "export DB_NAME='%(db_name)s' \n" \
-                   "export DB_PW='%(db_pw)s' \n" \
-                   "export DB_USER='%(db_user)s' \n" \
-                   "export DB_HOST='localhost' \n" \
-                   "export DB_PORT='' \n"
+    postactivate = '''
+        # Database settings
+        export DB_ENGINE='django.db.backends.postgresql_psycopg2'
+        export DB_NAME='%(db_name)s'
+        export DB_PW='%(db_pw)s'
+        export DB_USER='%(db_user)s'
+        export DB_HOST='localhost'
+        export DB_PORT=''
+    '''
 
-    postdeactivate = "#unset database \n" \
-                     "unset DB_ENGINE \n" \
-                     "unset DB_NAME \n " \
-                     "unset DB_PW \n" \
-                     "unset DB_USER \n" \
-                     "unset DB_HOST \n" \
-                     "unset DB_PORT \n"
-
+    postdeactivate = '''
+        #unset database
+        unset DB_ENGINE
+        unset DB_NAME
+        unset DB_PW
+        unset DB_USER
+        unset DB_HOST
+        unset DB_PORT
+    '''
     def __init__(self, project_dir, project_name, sudo=False,
                  sudo_user=None, *args, **kwargs):
         if sudo:
