@@ -1,8 +1,10 @@
 __author__ = 'Felix'
 import string
 import logging
+from unipath import Path
+
 from .installer import Installer
-from .utils import generate_unique_id
+from .utils import generate_unique_id, run_command
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
@@ -75,7 +77,18 @@ class DjangoInstaller(Installer):
 
         return return_string
 
-    def run_commands(self):
+    def run_prepare_configuration(self):
         # nothing to be run in django installer,
         # we just need to run the log files.
         logging.info('Doing nothing...')
+
+    def run_post_create_configuration(self):
+        self.post_run_command_stack.append(
+            self._run_django_post_install_script()
+        )
+
+    def _run_django_post_install_script(self):
+        exec_path = Path(Path(__file__).parent, 'bash', 'django_post_install.sh')
+        command = '%s %s' % (exec_path, self.project_name)
+
+        run_command(command)

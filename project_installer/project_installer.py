@@ -15,25 +15,30 @@ logging.basicConfig(level=logging.INFO,
 
 
 class ProjectInstaller(Installer):
-    postactivate = '#!/bin/bash' \
-                   '#setting project related variables' \
-                   'export PROJECT_NAME="%(project_name)s"\n' \
-                   'export PROJECT_PATH="$%(project_dir) \n" ' \
-                   'echo "virtual environment for application in project path: $PROJECT_PATH" \n' \
-                   '#extend python path \n' \
-                   ' EXTENSION="" \n ' \
-                   ' if [ -n "$PYTHONPATH" ] ; then \n' \
-                   '     OLD_PYTHON_PATH="$PYTHONPATH" \n ' \
-                   '     export OLD_PYTHON_PATH \n' \
-                   '     EXTENSION=":${OLD_PYTHON_PATH}" \n' \
-                   ' fi \n' \
-                   ' export PYTHONPATH=${PROJECT_PATH}${EXTENSION} \n'
+    postactivate = '''#!/bin/bash
+                   #setting project related variables
+                   export PROJECT_NAME="%(project_name)s
+                   export PROJECT_PATH="%(project_dir)s"
+                   echo "virtual environment for application in project path: $PROJECT_PATH"
+                   #extend python path
+                   EXTENSION=""
+                   if [ -n "$PYTHONPATH" ] ; then
+                        OLD_PYTHON_PATH="$PYTHONPATH"
+                        export OLD_PYTHON_PATH
+                        EXTENSION=":${OLD_PYTHON_PATH}"
+                   fi
+                   export PYTHONPATH=${PROJECT_PATH}${EXTENSION}
 
-    postdeactivate = '#unsetting project related variables' \
-                     'unset PROJECT_BASE_PATH \n ' \
-                     'unset PROJECT_NAME \n' \
-                     'unset PROJECT_PATH \n' \
-                     'export PYTHONPATH=${OLD_PYTHON_PATH} \n'
+                   '''
+
+    postdeactivate = '''
+                     #unsetting project related variables
+                     unset PROJECT_BASE_PATH
+                     unset PROJECT_NAME
+                     unset PROJECT_PATH
+                     export PYTHONPATH=${OLD_PYTHON_PATH}
+
+                     '''
 
     flavor = 'django_custom'
     git_repo = 'https://github.com/Libermentix/venv_skeletton_directory.git'
@@ -128,7 +133,7 @@ class ProjectInstaller(Installer):
         """
         Moves the created config_files into the bin folder to be executed.
         """
-        target = Path(self.venv_folder, 'bin')
+        target = Path(self.venv_folder, self.project_name, 'bin')
         move_orig = Path(self.install_path, which_one)
         logging.info('target: %s, move_orig: %s' % (target, move_orig))
 
@@ -136,7 +141,7 @@ class ProjectInstaller(Installer):
             logging.info('Moving %s into place ...' % which_one)
             move_orig.move(target)
 
-    def run_commands(self):
+    def run_prepare_configuration(self):
         self.get_git_repo()
         self.install_skeletton()
         self.install_requirements()
@@ -146,8 +151,21 @@ class ProjectInstaller(Installer):
         self.django_installer()
 
     def run(self):
-        self.run_commands()
-        self.run_create_config_files()
+        self.run_prepare_configuration()
+        self.run_create_configuration()
+        self.run_post_create_configuration()
+
+    def run_post_create_configuration(self):
+        """
+        run the the post_run_command_stack of all children.
+        """
+
+        for item in self.db_installer.post_run_command_stack:
+            item()
+
+        for item in self.django_installer.post_run_command_stack:
+            item()
+
         self.move_to_venv(which_one='postactivate')
         self.move_to_venv(which_one='postdeactivate')
 

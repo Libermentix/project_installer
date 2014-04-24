@@ -96,7 +96,7 @@ class DatabaseInstaller(Installer):
         logging.info('creating sql with variables...')
         self.sql = [sql % self.var_dict for sql in self.sql]
 
-    def run_commands(self):
+    def run_prepare_configuration(self):
         self.create_sql()
 
         logging.info('Running SQL...')

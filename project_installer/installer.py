@@ -16,6 +16,10 @@ class Installer(object):
     project_name = None
     project_dir = None
 
+    var_dict = {}
+
+    post_run_command_stack = []
+
     def __init__(self, project_dir, project_name, envwrapper=False,
                  *args, **kwargs):
         self.project_dir = Path(project_dir).absolute()
@@ -43,33 +47,36 @@ class Installer(object):
         else:
             return None
 
-    def run_commands(self):
+    def run_prepare_configuration(self):
         raise NotImplementedError('Must be implemented in subclass')
 
-    def create_postactivate(self):
-        logging.info('Creating postactivate script')
+    #def create_postactivate(self):
+    #    logging.info('Creating postactivate script')
+    #
+    #    if not self.postactivate:
+    #        raise NotImplementedError('Postactivate needs to be set')
 
-        if not self.postactivate:
-            raise NotImplementedError('Postactivate needs to be set')
+    #    self.postactivate = self.postactivate % self.var_dict
 
-        self.postactivate = self.postactivate % self.var_dict
-        logging.info(self.postactivate)
+    #def create_postdeactivate(self):
+    #    logging.info('Creating postdeactivate script')#
+    #
+    #    if not self.postdeactivate:
+    #        raise NotImplementedError('Postdeactivate needs to be set')
+    #
+    #    self.postdeactivate = self.postdeactivate % self.var_dict
 
-    def create_postdeactivate(self):
-        logging.info('Creating postdeactivate script')
+    def prepare_config_for_file_creation(self, which_one):
+        logging.info('preparing config variables ...')
+        if not getattr(self, which_one):
+            raise NotImplementedError('Postactivate needs to be set.')
 
-        if not self.postdeactivate:
-            raise NotImplementedError('Postdeactivate needs to be set')
+        setattr(self, which_one, which_one % self.var_dict)
 
-        self.postdeactivate = self.postdeactivate % self.var_dict
-        logging.info(self.postdeactivate)
-
-    def create_config(self, which_one):
-        create_func= getattr(self, 'create_%s' % which_one)
-        create_func()
+        logging.info(getattr(which_one))
 
     def create_file(self, which_one):
-        self.create_config(which_one=which_one)
+        self.prepare_config_for_file_creation(which_one=which_one)
 
         logging.info('Creating config files in parent dir: %s'
                      % self.install_path)
@@ -77,22 +84,24 @@ class Installer(object):
         #gets self.postdeactivate if which_one=postdeactivate
         contents = getattr(self, which_one)
 
-        logging.info('%s: Writing contents to file: \n %s'
-                     % (which_one, contents)
-        )
+        logging.info('%s: Writing contents to file ...' % which_one)
 
         p = Path(self.install_path, which_one)
         #write configuration and append it to the file
         p.write_file(contents, 'a+')
         logging.info('...done')
 
-    def run_create_config_files(self):
+    def run_create_configuration(self):
         self.create_file(which_one='postactivate')
         self.create_file(which_one='postdeactivate')
 
+    def run_post_create_configuration(self):
+        pass
+
     def run(self):
-        self.run_commands()
-        self.run_create_config_files()
+        self.run_prepare_configuration()
+        self.run_create_configuration()
+        self.run_post_create_configuration()
 
     def __call__(self, *args, **kwargs):
         self.run()
