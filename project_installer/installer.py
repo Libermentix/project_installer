@@ -53,7 +53,7 @@ class Installer(object):
             raise NotImplementedError('Postactivate needs to be set')
 
         self.postactivate = self.postactivate % self.var_dict
-        logging.info (self.postactivate)
+        logging.info(self.postactivate)
 
     def create_postdeactivate(self):
         logging.info('Creating postdeactivate script')

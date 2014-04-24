@@ -140,12 +140,14 @@ class ProjectInstaller(Installer):
         self.get_git_repo()
         self.install_skeletton()
         self.install_requirements()
+        logging.info('Now installing Database ...')
+        self.db_installer()
+        logging.info('Now installing django...')
+        self.django_installer()
 
     def run(self):
         self.run_commands()
         self.run_create_config_files()
-        self.db_installer()
-        self.django_installer()
         self.move_to_venv(which_one='postactivate')
         self.move_to_venv(which_one='postdeactivate')
 

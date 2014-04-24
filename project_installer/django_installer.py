@@ -78,4 +78,4 @@ class DjangoInstaller(Installer):
     def run_commands(self):
         # nothing to be run in django installer,
         # we just need to run the log files.
-        pass
+        logging.info('Doing nothing...')
