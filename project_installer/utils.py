@@ -8,6 +8,12 @@ from Queue import Queue, Empty
 from threading import Thread
 from subprocess import Popen, PIPE
 
+logger = logging.getLogger('project_installer.logger')
+logger.basicConfig(
+    level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s'
+)
+
+
 class ImproperlyConfigured(ValueError):
     pass
 
@@ -55,14 +61,17 @@ def printer(proc):
                 break
         else:
             identifier, line = item
-            print identifier + ':', line
+            if identifier == 'err':
+                logger.error(line)
+            else:
+                logger.info(line)
 
 
 def run_command(command):
     proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
 
     Thread(target=stream_watcher, name='stdout-watcher',
-            args=('STDOUT', proc.stdout)).start()
+            args=('out', proc.stdout)).start()
     Thread(target=stream_watcher, name='stderr-watcher',
-            args=('STDERR', proc.stderr)).start()
+            args=('err', proc.stderr)).start()
     Thread(target=printer, args=(proc,),name='printer').start()

@@ -1,11 +1,8 @@
 __author__ = 'Felix'
-import logging
 import string
-from .installer import Installer
-from .utils import generate_unique_id, run_command
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s')
+from .installer import Installer
+from .utils import generate_unique_id, run_command, logger
 
 
 class DatabaseInstaller(Installer):
@@ -62,7 +59,7 @@ class DatabaseInstaller(Installer):
             self.project_name,
             generate_unique_id(length=3, chars=string.ascii_lowercase),
             generate_unique_id(
-                length=3, chars=string.digits+string.ascii_lowercase)
+                length=3, chars=string.digits + string.ascii_lowercase)
         )
 
     @property
@@ -93,18 +90,18 @@ class DatabaseInstaller(Installer):
         return self._db_name_cache
 
     def create_sql(self):
-        logging.info('creating sql with variables...')
+        logger.info('creating sql with variables...')
         self.sql = [sql % self.var_dict for sql in self.sql]
 
     def run_prepare_configuration(self):
         self.create_sql()
 
-        logging.info('Running SQL...')
+        logger.info('Running SQL...')
 
         command_prefix = 'sudo su %s -c ' % self.sudo_user if self.sudo else ''
 
         for sql in self.sql:
             command = '%s psql -d postgres -c %s' % (command_prefix, sql)
-            logging.info('running %s ' % command)
+            logger.info('running %s ' % command)
             run_command(command)
 

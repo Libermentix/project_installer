@@ -1,17 +1,11 @@
 __author__ = 'Felix'
-import logging
-
 from unipath import Path
 import git
 
 from .installer import Installer
 from .database_installer import DatabaseInstaller
 from .django_installer import DjangoInstaller
-from .utils import run_command
-
-
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s')
+from .utils import run_command, logger
 
 
 class ProjectInstaller(Installer):
@@ -84,7 +78,7 @@ class ProjectInstaller(Installer):
 
     def get_git_repo(self):
         self.create_tmp_dir()
-        logging.info('Cloning repository ...')
+        logger.info('Cloning repository ...')
         git.Git().clone(self.git_repo)
 
         #get last
@@ -92,18 +86,18 @@ class ProjectInstaller(Installer):
         #remove .git
         directory = directory.split('.')[0]
         self._tmp_dir = Path(self._tmp_dir, directory)
-        logging.info('..done')
+        logger.info('..done')
 
 
     def install_skeletton(self):
-        logging.info('Installing %s' % self.flavor)
+        logger.info('Installing %s' % self.flavor)
         move_orig = Path(self._tmp_dir, self.flavor)
 
         #move all items in the directory into the install_path
         for item in move_orig.listdir():
             item.move(self.install_path)
         self.delete_tmp_dir()
-        logging.info('...done')
+        logger.info('...done')
 
     def install_virtualenv(self):
         """
@@ -117,7 +111,7 @@ class ProjectInstaller(Installer):
                                    self.project_name,
                                    self.requirements_file)
 
-        logging.info('Installing virtualenv... (calling %s)' % command)
+        logger.info('Installing virtualenv... (calling %s)' % command)
         run_command(command)
 
     def install_requirements(self):
@@ -137,10 +131,10 @@ class ProjectInstaller(Installer):
         """
         target = Path(self.venv_folder, self.project_name, 'bin', which_one)
         source = Path(self.install_path, which_one)
-        logging.info('target: %s, move_orig: %s' % (target, source))
+        logger.info('target: %s, move_orig: %s' % (target, source))
 
         if source.exists():
-            logging.info('Moving %s into place ...' % which_one)
+            logger.info('Moving %s into place ...' % which_one)
             target.write_file(source.read_file(), 'w')
             source.remove()
 
@@ -148,9 +142,9 @@ class ProjectInstaller(Installer):
         self.get_git_repo()
         self.install_skeletton()
         self.install_requirements()
-        logging.info('Now installing Database ...')
+        logger.info('Now installing Database ...')
         self.db_installer()
-        logging.info('Now installing django...')
+        logger.info('Now installing django...')
         self.django_installer()
 
     def run(self):

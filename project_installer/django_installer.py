@@ -1,13 +1,11 @@
 __author__ = 'Felix'
 import string
-import logging
+
 from unipath import Path
 
 from .installer import Installer
-from .utils import generate_unique_id, run_command
+from .utils import generate_unique_id, run_command, logger
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s')
 
 class DjangoInstaller(Installer):
     postactivate = '#django \n' \
@@ -15,7 +13,7 @@ class DjangoInstaller(Installer):
                    'export DJANGO_SECRET_KEY="%(django_secret_key)s"\n' \
                    'export DJANGO_DEBUG="%(django_debug)s"\n' \
                    'export DJANGO_MEDIA_URL="http://%(django_media_url)s/"\n' \
-                   'export DJANGO_STATIC_URL="http://%(django_static_url)s/"\n'\
+                   'export DJANGO_STATIC_URL="http://%(django_static_url)s/"\n' \
                    'export DJANGO_WEBSITE_URL="http://%(django_website_url)s"\n'
 
     postdeactivate = '#django \n' \
@@ -80,7 +78,7 @@ class DjangoInstaller(Installer):
     def run_prepare_configuration(self):
         # nothing to be run in django installer,
         # we just need to run the log files.
-        logging.info('Doing nothing...')
+        logger.info('Doing nothing...')
 
     def run_post_create_configuration(self):
         self.post_run_command_stack.append(
@@ -88,7 +86,8 @@ class DjangoInstaller(Installer):
         )
 
     def _run_django_post_install_script(self):
-        exec_path = Path(Path(__file__).parent, 'bash', 'django_post_install.sh')
+        exec_path = Path(Path(__file__).parent, 'bash',
+                         'django_post_install.sh')
         command = '%s %s' % (exec_path, self.project_name)
 
         run_command(command)

@@ -1,12 +1,11 @@
 __author__ = 'Felix'
-import logging
 import os
-import six
 
+import six
 from unipath import Path
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s')
+from .utils import logger
+
 
 class Installer(object):
     install_path = None
@@ -51,29 +50,29 @@ class Installer(object):
         raise NotImplementedError('Must be implemented in subclass')
 
     def prepare_config_for_file_creation(self, which_one):
-        logging.info('preparing config variables ...')
+        logger.info('preparing config variables ...')
         if not getattr(self, which_one):
             raise NotImplementedError('Postactivate needs to be set.')
 
         setattr(self, which_one, which_one % self.var_dict)
 
-        logging.info(getattr(self, which_one))
+        logger.info(getattr(self, which_one))
 
     def create_file(self, which_one):
         self.prepare_config_for_file_creation(which_one=which_one)
 
-        logging.info('Creating config files in parent dir: %s'
-                     % self.install_path)
+        logger.info('Creating config files in parent dir: %s'
+                    % self.install_path)
 
         #gets self.postdeactivate if which_one=postdeactivate
         contents = getattr(self, which_one)
 
-        logging.info('%s: Writing contents to file ...' % which_one)
+        logger.info('%s: Writing contents to file ...' % which_one)
 
         p = Path(self.install_path, which_one)
         #write configuration and append it to the file
         p.write_file(contents, 'a+')
-        logging.info('...done')
+        logger.info('...done')
 
     def run_create_configuration(self):
         self.create_file(which_one='postactivate')
