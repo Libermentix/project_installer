@@ -157,7 +157,8 @@ setup(
               'virtualenvwrapper (>=4.0)',
               'unipath',
               'six',
-              'GitPython'
+              'GitPython',
+              'jinja2'
               ],
 
     namespace_packages=['virtualenvwrapper'],

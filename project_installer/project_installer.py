@@ -9,33 +9,10 @@ from .utils import run_command, logger
 
 
 class ProjectInstaller(Installer):
-    postactivate = '#!/bin/bash\n'
-    postactivate += '''
-    #setting project related variables
-    export PROJECT_NAME="%(project_name)s
-    export PROJECT_PATH="%(project_dir)s"
-    echo "virtual environment for application in project path: $PROJECT_PATH"
-    #extend python path
-    EXTENSION=""
-    if [ -n "$PYTHONPATH" ] ; then
-        OLD_PYTHON_PATH="$PYTHONPATH"
-        export OLD_PYTHON_PATH
-        EXTENSION=":${OLD_PYTHON_PATH}"
-    fi
-    export PYTHONPATH=${PROJECT_PATH}${EXTENSION}
 
-               '''
-
-    postdeactivate = '''
-    #unsetting project related variables
-    unset PROJECT_BASE_PATH
-    unset PROJECT_NAME
-    unset PROJECT_PATH
-    export PYTHONPATH=${OLD_PYTHON_PATH}
-    '''
 
     flavor = 'django_custom'
-    git_repo = 'https://github.com/Libermentix/venv_skeletton_directory.git'
+    git_repo = 'https://github.com/Libermentix/project_skeletton_directory.git'
 
     def __init__(self, project_dir, project_name,
                  db_sudo=False, db_sudo_user=None, *args, **kwargs):
@@ -48,6 +25,9 @@ class ProjectInstaller(Installer):
         )
 
         self._tmp_dir = None
+
+        if self.install_path.exists():
+            self.install_path.rmtree()
 
         self.db_installer = DatabaseInstaller(
             project_dir=project_dir, project_name=project_name,
@@ -63,6 +43,14 @@ class ProjectInstaller(Installer):
             self.install_path, 'requirements', 'base.txt'
         ).absolute()
 
+    @property
+    def repo_dir(self):
+        #get last
+        directory = self.git_repo.split('/')[-1:][0]
+        #remove .git
+        directory = directory.split('.')[0]
+        return Path(self._tmp_dir, directory)
+
     def create_tmp_dir(self):
         # TODO:
         # Account for existing project paths, here it should ask to remove
@@ -74,27 +62,26 @@ class ProjectInstaller(Installer):
     def delete_tmp_dir(self):
         self.project_dir.chdir()
         self._tmp_dir.rmtree()
-        self._tmp_dir = None
 
     def get_git_repo(self):
         self.create_tmp_dir()
         logger.info('Cloning repository ...')
-        git.Git().clone(self.git_repo)
 
-        #get last
-        directory = self.git_repo.split('/')[-1:][0]
-        #remove .git
-        directory = directory.split('.')[0]
-        self._tmp_dir = Path(self._tmp_dir, directory)
+        if self.repo_dir.exists():
+            logger.info('Repo dir exists removing it...')
+            self.repo_dir.rmtree()
+
+        git.Git().clone(self.git_repo)
         logger.info('..done')
 
 
     def install_skeletton(self):
         logger.info('Installing %s' % self.flavor)
-        move_orig = Path(self._tmp_dir, self.flavor)
+
+        source = Path(self.repo_dir, self.flavor)
 
         #move all items in the directory into the install_path
-        for item in move_orig.listdir():
+        for item in source.listdir():
             item.move(self.install_path)
         self.delete_tmp_dir()
         logger.info('...done')

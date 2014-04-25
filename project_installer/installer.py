@@ -3,6 +3,7 @@ import os
 
 import six
 from unipath import Path
+from jinja2 import Template
 
 from .utils import logger
 
@@ -46,6 +47,20 @@ class Installer(object):
         else:
             return None
 
+    @property
+    def template_folder(self):
+        """
+        provides the template folder
+        """
+        return Path((__file__).parent,'templates')
+
+    def get_template(self, which_one):
+        installer_name = Path(__file__).stem
+        template_file = Path(
+            self.template_folder, installer_name, '.' , which_one, '.sh'
+        )
+        return template_file
+
     def run_prepare_configuration(self):
         raise NotImplementedError('Must be implemented in subclass')
 
@@ -54,7 +69,9 @@ class Installer(object):
         if not getattr(self, which_one):
             raise NotImplementedError('Postactivate needs to be set.')
 
-        contents = getattr(self, '%s' % which_one) % self.var_dict
+        contents = Template(
+            self.get_template(which_one=which_one)
+        ).render(**self.var_dict)
 
         setattr(self, '%s' % which_one, contents)
 

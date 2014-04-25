@@ -8,25 +8,7 @@ from .utils import generate_unique_id, run_command, logger
 
 
 class DjangoInstaller(Installer):
-    postactivate = '''
-    #django
-    export DJANGO_SETTINGS_MODULE="%(settings_module)s
-    export DJANGO_SECRET_KEY="%(django_secret_key)s"
-    export DJANGO_DEBUG="%(django_debug)s"
-    export DJANGO_MEDIA_URL="http://%(django_media_url)s/"
-    export DJANGO_STATIC_URL="http://%(django_static_url)s/"
-    export DJANGO_WEBSITE_URL="http://%(django_website_url)s"
-    '''
 
-    postdeactivate = '''
-    #django
-    unset DJANGO_SETTINGS_MODULE
-    unset DJANGO_SECRET_KEY
-    unset DJANGO_DEBUG
-    unset DJANGO_MEDIA_URL
-    unset DJANGO_STATIC_URL
-    unset DJANGO_WEBSITE_URL
-    '''
     settings_module = 'settings.base'
     is_production = False
     domain_prefix = 'www.'

@@ -15,13 +15,7 @@ class DatabaseInstaller(Installer):
     sudo_user = 'postgres'
 
     postactivate = '''
-        # Database settings
-        export DB_ENGINE='django.db.backends.postgresql_psycopg2'
-        export DB_NAME='%(db_name)s'
-        export DB_PW='%(db_pw)s'
-        export DB_USER='%(db_user)s'
-        export DB_HOST='localhost'
-        export DB_PORT=''
+
     '''
 
     postdeactivate = '''
