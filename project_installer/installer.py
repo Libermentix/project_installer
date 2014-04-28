@@ -66,7 +66,7 @@ class Installer(object):
 
     def prepare_config_for_file_creation(self, which_one):
         logger.info('preparing config variables ...')
-        if not getattr(self, which_one):
+        if not which_one:
             raise NotImplementedError('Postactivate needs to be set.')
 
         contents = Template(
