@@ -33,7 +33,7 @@ class DjangoInstaller(Installer):
     @property
     def django_secret_key(self):
         string_choices = string.ascii_lowercase + string.ascii_uppercase \
-                         + string.digits + '!@#%^&*()_-+=[]|:;/?.>,<`~'
+                         + string.digits + '!@#%^&*_-+=:;/?.>,<~'
         return generate_unique_id(length=50, chars=string_choices)
 
     @property
@@ -61,6 +61,4 @@ class DjangoInstaller(Installer):
         return return_string
 
     def run_prepare_configuration(self):
-        # nothing to be run in django installer,
-        # we just need to run the log files.
-        logger.info('Doing nothing...')
+        pass

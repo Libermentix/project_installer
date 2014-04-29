@@ -1,8 +1,8 @@
 #!/bin/bash
 #setting project related variables
-export PROJECT_NAME="{{ project_name }}"
-export PROJECT_PATH="{{ project_dir }}"
-echo "virtual environment for application in projectpath: {{ project_dir }}"
+export PROJECT_NAME='{{ project_name }}'
+export PROJECT_PATH='{{ project_dir }}{{ project_name }}/'
+echo "virtual environment for application in projectpath: ${PROJECT_PATH}"
 #extend pythonpath
 EXTENSION=""
 if [ -n "$PYTHONPATH" ] ; then

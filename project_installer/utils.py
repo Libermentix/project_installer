@@ -9,17 +9,16 @@ from threading import Thread
 from subprocess import Popen, PIPE
 
 logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s'
+    level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s'
 )
 logger = logging.getLogger('project_installer.logger')
-
-
 
 
 class ImproperlyConfigured(ValueError):
     pass
 
-characterset = string.ascii_letters+string.digits+'_)(*&^%$#@!,.<>/?;:'
+characterset = string.ascii_letters+string.digits+'_!,.<>/?;:'
+
 
 def generate_unique_id(length=6, chars=characterset):
     '''
@@ -43,6 +42,8 @@ def get_env_variable(var_name):
 
 #threading and Popen: http://sharats.me/the-ever-useful-and-neat-subprocess-module.html
 io_q = Queue()
+
+
 def stream_watcher(identifier, stream):
 
     for line in stream:
