@@ -4,7 +4,7 @@ import string
 from unipath import Path
 
 from .installer import Installer
-from .utils import generate_unique_id, run_command, logger
+from .utils import generate_unique_id, add_trailing_slash
 
 
 class DjangoInstaller(Installer):
@@ -21,6 +21,8 @@ class DjangoInstaller(Installer):
             project_dir=project_dir, project_name=project_name, *args, **kwargs
         )
 
+        self._django_secret_key_cache = False
+
         self.var_dict = dict(
             settings_module=self.settings_module,
             django_debug=self.django_debug,
@@ -30,29 +32,32 @@ class DjangoInstaller(Installer):
             django_website_url=self.django_website_url
         )
 
-    @property
-    def django_secret_key(self):
-        string_choices = string.ascii_lowercase + string.ascii_uppercase \
-                         + string.digits + '!@#%^&*_-+=:;/?.>,<~'
-        return generate_unique_id(length=50, chars=string_choices)
+    def django_get_secret_key(self):
+        if not getattr(self, '_django_secret_key_cache', False):
+            string_choices = string.ascii_lowercase + \
+                             string.ascii_uppercase \
+                             + string.digits + \
+                             '!@#%^&*_-+=:;/?.>,<~'
 
-    @property
-    def django_debug(self):
-        if self.is_production:
-            return False
-        return True
+            self._django_secret_key_cache = \
+                generate_unique_id(length=50, chars=string_choices)
 
-    @property
-    def django_media_url(self):
-        return '%s%s%s' % (self.media_prefix, self.project_name, self.domain)
+        return self._django_secret_key_cache
 
-    @property
-    def django_static_url(self):
-        return '%s%s%s' % (self.static_prefix, self.project_name, self.domain)
+    def get_django_media_url(self):
+        media_url = '%s%s%s'
+        return add_trailing_slash(media_url)
 
-    @property
-    def django_website_url(self):
+    def get_django_static_url(self):
+       static_url = '%s%s%s'
+       return add_trailing_slash(static_url)
+
+    def get_django_debug(self):
+        return not self.is_production
+
+    def get_website_url(self):
         return_string = ''
+
         if not self.is_production:
             return_string += 'test.'
         return_string += '%s%s%s' % (self.domain_prefix,
@@ -60,5 +65,27 @@ class DjangoInstaller(Installer):
 
         return return_string
 
+    @property
+    def django_secret_key(self):
+        return self.django_get_secret_key()
+
+    @property
+    def django_debug(self):
+        return self.get_django_debug()
+
+    @property
+    def django_media_url(self):
+        return self.get_django_media_url()
+
+    @property
+    def django_static_url(self):
+        return self.get_django_static_url()
+
+    @property
+    def django_website_url(self):
+        return self.get_website_url()
+
     def run_prepare_configuration(self):
         pass
+
+

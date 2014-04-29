@@ -38,7 +38,8 @@ def get_env_variable(var_name):
         raise ImproperlyConfigured(error_msg)
 
 
-
+def add_trailing_slash(target_string):
+    return target_string if target_string[-1:]=='/' else target_string+'/'
 
 #threading and Popen: http://sharats.me/the-ever-useful-and-neat-subprocess-module.html
 io_q = Queue()
