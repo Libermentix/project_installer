@@ -23,5 +23,3 @@ fi
 
 # install the database and run migration
 # since this is at the end of file i
-django-admin.py syncdb || true
-django-admin.py migrate || true

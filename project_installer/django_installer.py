@@ -4,7 +4,8 @@ import string
 from unipath import Path
 
 from .installer import Installer
-from .utils import generate_unique_id, add_trailing_slash
+from .utils import generate_unique_id, add_trailing_slash, logger
+
 
 
 class DjangoInstaller(Installer):
@@ -14,7 +15,7 @@ class DjangoInstaller(Installer):
     domain_prefix = 'www.'
     media_prefix = 'upload.cdn.'
     static_prefix = 'static.cdn.'
-    domain = '.com'
+    tld = '.com'
 
     def __init__(self, project_dir, project_name, *args, **kwargs):
         super(DjangoInstaller, self).__init__(
@@ -44,13 +45,11 @@ class DjangoInstaller(Installer):
 
         return self._django_secret_key_cache
 
-    def get_django_media_url(self):
-        media_url = '%s%s%s'
-        return add_trailing_slash(media_url)
+    def get_django_url(self, which_one):
+        prefix = getattr(self, '%s_prefix' % which_one)
+        url = '%s%s%s' % (prefix, self.project_name, self.tld)
 
-    def get_django_static_url(self):
-       static_url = '%s%s%s'
-       return add_trailing_slash(static_url)
+        return add_trailing_slash(url)
 
     def get_django_debug(self):
         return not self.is_production
@@ -61,7 +60,7 @@ class DjangoInstaller(Installer):
         if not self.is_production:
             return_string += 'test.'
         return_string += '%s%s%s' % (self.domain_prefix,
-                                     self.project_name, self.domain)
+                                     self.project_name, self.tld)
 
         return return_string
 
@@ -75,17 +74,29 @@ class DjangoInstaller(Installer):
 
     @property
     def django_media_url(self):
-        return self.get_django_media_url()
+        return self.get_django_url('media')
 
     @property
     def django_static_url(self):
-        return self.get_django_static_url()
+        return self.get_django_url('static')
 
     @property
     def django_website_url(self):
         return self.get_website_url()
 
+    def install_django_database_schema(self):
+        exec_path = Path(Path(__file__).parent, 'bash', 'django_installer.sh')
+        logger.info('Installing database schema ...')
+        command = '%s %s' % (exec_path, self.project_name)
+
+        self.run_command(command)
+
+        logger.info('...done')
+
     def run_prepare_configuration(self):
-        pass
+        self.post_run_command_stack.append(
+            self.install_django_database_schema
+        )
+
 
 

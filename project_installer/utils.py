@@ -4,9 +4,6 @@ import logging
 import os
 import string
 import random
-from Queue import Queue, Empty
-from threading import Thread
-from subprocess import Popen, PIPE
 
 logging.basicConfig(
     level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s'
@@ -40,42 +37,3 @@ def get_env_variable(var_name):
 
 def add_trailing_slash(target_string):
     return target_string if target_string[-1:]=='/' else target_string+'/'
-
-#threading and Popen: http://sharats.me/the-ever-useful-and-neat-subprocess-module.html
-io_q = Queue()
-
-
-def stream_watcher(identifier, stream):
-
-    for line in stream:
-        io_q.put((identifier, line))
-
-    if not stream.closed:
-        stream.close()
-
-
-def printer(proc):
-    while True:
-        try:
-            # Block for 1 second.
-            item = io_q.get(True, 1)
-        except Empty:
-            # No output in either streams for a second. Are we done?
-            if proc.poll() is not None:
-                break
-        else:
-            identifier, line = item
-            if identifier == 'err':
-                logger.error(line)
-            else:
-                logger.info(line)
-
-
-def run_command(command):
-    proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-
-    Thread(target=stream_watcher, name='stdout-watcher',
-            args=('out', proc.stdout)).start()
-    Thread(target=stream_watcher, name='stderr-watcher',
-            args=('err', proc.stderr)).start()
-    Thread(target=printer, args=(proc,),name='printer').start()

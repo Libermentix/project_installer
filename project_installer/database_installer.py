@@ -2,7 +2,8 @@ __author__ = 'Felix'
 import string
 
 from .installer import Installer
-from .utils import generate_unique_id, run_command, logger
+from .utils import generate_unique_id, logger
+from .threads import Command
 
 
 class DatabaseInstaller(Installer):
@@ -14,19 +15,6 @@ class DatabaseInstaller(Installer):
     sudo = False
     sudo_user = 'postgres'
 
-    postactivate = '''
-
-    '''
-
-    postdeactivate = '''
-        #unset database
-        unset DB_ENGINE
-        unset DB_NAME
-        unset DB_PW
-        unset DB_USER
-        unset DB_HOST
-        unset DB_PORT
-    '''
     def __init__(self, project_dir, project_name, sudo=False,
                  sudo_user=None, *args, **kwargs):
         if sudo:
@@ -42,6 +30,23 @@ class DatabaseInstaller(Installer):
         self.var_dict = dict(
             db_user=self.db_user, db_pw=self.db_pw, db_name=self.db_name
         )
+
+    def create_sql(self):
+        logger.debug('Creating sql with variables ...')
+        self.sql = [sql % self.var_dict for sql in self.sql]
+
+    def run_prepare_configuration(self):
+        self.create_sql()
+
+        logger.info('Running SQL...')
+        command_prefix = 'sudo su %s -c ' % self.sudo_user if self.sudo else ''
+
+        for sql in self.sql:
+            command = '%s psql -d postgres -c %s' % (command_prefix, sql)
+            logger.debug('running %s ' % command)
+            self.run_command(command=command, blocking=True)
+
+        logger.info('...done')
 
     def _generate_db_pw(self):
         return u'%s' % generate_unique_id(length=20)
@@ -85,20 +90,4 @@ class DatabaseInstaller(Installer):
         if not getattr(self, '_db_name_cache', False):
             self._db_name_cache = self._generate_db_name()
         return self._db_name_cache
-
-    def create_sql(self):
-        logger.info('creating sql with variables...')
-        self.sql = [sql % self.var_dict for sql in self.sql]
-
-    def run_prepare_configuration(self):
-        self.create_sql()
-
-        logger.info('Running SQL...')
-
-        command_prefix = 'sudo su %s -c ' % self.sudo_user if self.sudo else ''
-
-        for sql in self.sql:
-            command = '%s psql -d postgres -c %s' % (command_prefix, sql)
-            logger.info('running %s ' % command)
-            run_command(command)
 

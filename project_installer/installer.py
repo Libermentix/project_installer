@@ -3,9 +3,12 @@ import os
 
 import six
 from unipath import Path
-from jinja2 import Template, Environment, FileSystemLoader
+
+from jinja2 import Environment, FileSystemLoader
 
 from .utils import logger
+
+from .threads import Command, finish_queued_commands
 
 
 class Installer(object):
@@ -65,6 +68,20 @@ class Installer(object):
 
         return self._environment_cache
 
+    def run_command(self, command, blocking=False):
+        command = Command(command)
+
+        command()
+
+        if blocking:
+            logger.debug('Waiting for command to finish...')
+            command.wait()
+
+        return True
+
+    def finish_queued_commands(self):
+        finish_queued_commands()
+
     def get_installer_name(self):
         return self.__class__.__name__.lower()
 
@@ -115,6 +132,29 @@ class Installer(object):
         p = Path(self.install_path, which_one)
         #write configuration and append it to the file
         p.write_file(contents, 'a+')
+        logger.info('...done')
+
+    def move_to_venv(self, which_one):
+        """
+        Moves the created config_files into the bin folder to be executed.
+        Does this by first pasting all the contents of the temporary file
+        into the new or existing target file and then deleting the temp file.
+        """
+        target = Path(self.venv_folder, self.project_name, 'bin', which_one)
+        source = Path(self.install_path, which_one)
+        logger.info('target: %s, move_orig: %s' % (target, source))
+
+        if source.exists():
+            logger.info('Moving %s into place ...' % which_one)
+            content = source.read_file()
+
+            #make sure the directory exists
+            if not target.parent.exists():
+                target.parent.mkdir(parents=True)
+            target.write_file(content, 'w+')
+
+            source.remove()
+
         logger.info('...done')
 
     def run_create_configuration(self):
