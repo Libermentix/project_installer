@@ -12,6 +12,8 @@ from .utils import logger
 queue = Queue(40)
 processes = list()
 producers = list()
+consumer = None
+
 ##
 ## Based on a tutorial:
 ## http://agiliq.com/blog/2013/10/producer-consumer-problem-in-python/
@@ -69,6 +71,9 @@ def finish_queued_commands():
         proc.wait()
     logger.debug('All queued process finished')
 
+    logger.debug('Finishing up the producer as well....')
+    consumer.join()
+
     logger.debug('...done')
 
 
@@ -95,6 +100,7 @@ class Command(object):
     def run_command(self):
         global processes
         global producers
+        global consumer
 
         self.proc = Popen(
             self.command,
@@ -118,7 +124,8 @@ class Command(object):
         if len(processes) == 1:
             # start the consumer thread only once there are actual processes
             # to listen to.
-            ConsumerThread().start()
+            consumer = ConsumerThread()
+            consumer.start()
 
 
 @atexit.register
